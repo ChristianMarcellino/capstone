@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Requests\EventStoreRequest;
 use App\Http\Requests\EventUpdateRequest;
@@ -21,6 +22,21 @@ class EventController extends Controller
         ]);
     }
 
+    private function syncEventItems(Event $event, array $items)
+    {
+        $event->eventItems()->delete();
+
+        foreach ($items as $item) {
+            $product = Product::findOrFail($item['product_id']);
+
+            $event->eventItems()->create([
+                'product_id' => $product->id,
+                'item_price' => $product->price,
+                'item_name' => $product->name,
+            ]);
+        }
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -28,7 +44,14 @@ class EventController extends Controller
     {
         try {
             $event = DB::transaction(function () use ($request) {
-                return Event::create($request->validated());
+                $data = $request->validated();
+                $items = $data['event_items'];
+                unset($data['event_items']);
+
+                $event = Event::create($data);
+                $this->syncEventItems($event, $items);
+
+                return $event->load('eventItems.product');
             });
 
             return response()->json([
@@ -68,8 +91,14 @@ class EventController extends Controller
     {
         try {
             $updatedEvent = DB::transaction(function () use ($request, $event) {
-                $event->update($request->validated());
-                return $event->refresh();
+                $data = $request->validated();
+                $items = $data['event_items'];
+                unset($data['event_items']);
+
+                $event->update($data);
+                $this->syncEventItems($event, $items);
+
+                return $event->refresh()->load('eventItems.product');
             });
 
         } catch (\Throwable $e) {

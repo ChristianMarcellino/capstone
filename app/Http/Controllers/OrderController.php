@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Requests\OrderStoreRequest;
 use App\Http\Requests\OrderUpdateRequest;
@@ -21,6 +22,22 @@ class OrderController extends Controller
         ]);
     }
 
+    private function syncOrderItems(Order $order, array $items)
+    {
+        $order->orderItems()->delete();
+
+        foreach ($items as $item) {
+            $product = Product::findOrFail($item['product_id']);
+
+            $order->orderItems()->create([
+                'product_id' => $product->id,
+                'quantity' => $item['quantity'],
+                'item_price' => $product->price,
+                'item_name' => $product->name,
+            ]);
+        }
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -28,7 +45,14 @@ class OrderController extends Controller
     {
         try {
             $order = DB::transaction(function () use ($request) {
-                return Order::create($request->validated());
+                $data = $request->validated();
+                $items = $data['order_items'];
+                unset($data['order_items']);
+
+                $order = Order::create($data);
+                $this->syncOrderItems($order, $items);
+
+                return $order->load('orderItems.product');
             });
 
             return response()->json([
@@ -68,8 +92,14 @@ class OrderController extends Controller
     {
         try {
             $updatedOrder = DB::transaction(function () use ($request, $order) {
-                $order->update($request->validated());
-                return $order->refresh();
+                $data = $request->validated();
+                $items = $data['order_items'];
+                unset($data['order_items']);
+
+                $order->update($data);
+                $this->syncOrderItems($order, $items);
+
+                return $order->refresh()->load('orderItems.product');
             });
 
         } catch (\Throwable $e) {

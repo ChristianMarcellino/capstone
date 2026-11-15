@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\WhatsappDraft;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Requests\WhatsappDraftStoreRequest;
 use App\Http\Requests\WhatsappDraftUpdateRequest;
@@ -21,6 +22,22 @@ class WhatsappDraftController extends Controller
         ]);
     }
 
+    private function syncWhatsappDraftItems(WhatsappDraft $draft, array $items)
+    {
+        $draft->whatsappDraftItems()->delete();
+
+        foreach ($items as $item) {
+            $product = Product::findOrFail($item['product_id']);
+
+            $draft->whatsappDraftItems()->create([
+                'product_id' => $product->id,
+                'quantity' => $item['quantity'],
+                'item_price' => $product->price,
+                'item_name' => $product->name,
+            ]);
+        }
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -28,7 +45,14 @@ class WhatsappDraftController extends Controller
     {
         try {
             $draft = DB::transaction(function () use ($request) {
-                return WhatsappDraft::create($request->validated());
+                $data = $request->validated();
+                $items = $data['whatsapp_draft_items'];
+                unset($data['whatsapp_draft_items']);
+
+                $draft = WhatsappDraft::create($data);
+                $this->syncWhatsappDraftItems($draft, $items);
+
+                return $draft->load('whatsappDraftItems.product');
             });
 
             return response()->json([
@@ -68,8 +92,14 @@ class WhatsappDraftController extends Controller
     {
         try {
             $updatedDraft = DB::transaction(function () use ($request, $whatsappDraft) {
-                $whatsappDraft->update($request->validated());
-                return $whatsappDraft->refresh();
+                $data = $request->validated();
+                $items = $data['whatsapp_draft_items'];
+                unset($data['whatsapp_draft_items']);
+
+                $whatsappDraft->update($data);
+                $this->syncWhatsappDraftItems($whatsappDraft, $items);
+
+                return $whatsappDraft->refresh()->load('whatsappDraftItems.product');
             });
 
         } catch (\Throwable $e) {

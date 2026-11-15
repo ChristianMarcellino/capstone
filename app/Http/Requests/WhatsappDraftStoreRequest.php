@@ -28,6 +28,9 @@ class WhatsappDraftStoreRequest extends FormRequest
             "notes" => "nullable|string",
             "date" => "required|date",
             "status" => "required|string|in:accepted,rejected,expired,pending",
+            "whatsapp_draft_items" => "required|array",
+            "whatsapp_draft_items.*.product_id" => "required|exists:products,id",
+            "whatsapp_draft_items.*.quantity" => "required|integer|min:1",
         ];
     }
 }
