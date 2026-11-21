@@ -6,6 +6,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\WhatsappDraftController;
+use App\Http\Controllers\CategoryController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -15,3 +16,4 @@ Route::apiResource('products', ProductController::class);
 Route::apiResource('events', EventController::class);
 Route::apiResource('orders', OrderController::class);
 Route::apiResource('whatsapp-drafts', WhatsappDraftController::class)->parameters(['whatsapp-drafts' => 'whatsappDraft']); //Ensuring id parameter name is consistent
+Route::apiResource('categories', CategoryController::class);

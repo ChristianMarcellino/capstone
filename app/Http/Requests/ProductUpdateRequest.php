@@ -29,7 +29,7 @@ class ProductUpdateRequest extends FormRequest
             "stock" => "required|integer",
             "image" => "nullable|file",
             "is_active" => "required|boolean",
-            "category" => "required|string|in:normal,event",
+            "category_id" => "required|exists:categories,id",
         ];
     }
 }

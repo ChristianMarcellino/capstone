@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('image_url')->nullable();
             $table->string('image_id')->nullable();
             $table->boolean('is_active')->default(true);
-            $table->enum('category', ['normal', 'event'])->default('normal');
+            $table->foreignId('category_id')->constrained();
             $table->timestamps();
         });
     }
