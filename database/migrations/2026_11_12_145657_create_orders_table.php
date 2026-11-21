@@ -16,7 +16,7 @@ return new class extends Migration
              $table->string('customer_name');
             $table->string('customer_phone');
             $table->text('notes')->nullable();
-            $table->timestamp('date');
+            $table->timestamp('pickup_date');
             $table->integer('total');
             $table->enum('status', [
                 'complete',
