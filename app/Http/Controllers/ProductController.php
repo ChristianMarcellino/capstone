@@ -17,7 +17,7 @@ class ProductController extends Controller
     public function index()
     {
         return response()->json([
-            'data' => Product::with(['orders', 'events', 'whatsappDrafts'])->get(),
+            'data' => Product::all(),
             'message' => 'Products retrieved successfully',
         ]);
     }
