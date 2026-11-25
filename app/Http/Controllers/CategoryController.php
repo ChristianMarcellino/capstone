@@ -16,7 +16,7 @@ class CategoryController extends Controller
     public function index()
     {
         return response()->json([
-            'data' => Category::with('products')->get(),
+            'data' => Category::all(),
             'message' => 'Categories retrieved successfully',
         ]);
     }
