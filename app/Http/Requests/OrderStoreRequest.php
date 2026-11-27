@@ -26,7 +26,7 @@ class OrderStoreRequest extends FormRequest
             "customer_name" => "required|string",
             "customer_phone" => "required|string",
             "notes" => "nullable|string",
-            "date" => "required|date",
+            "pickup_date" => "required|date",
             "status" => "required|string|in:complete,cancelled,on_progress",
             "order_items" => "required|array",
             "order_items.*.product_id" => "required|exists:products,id",

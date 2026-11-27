@@ -52,7 +52,7 @@ class OrderController extends Controller
                 $order = Order::create($data);
                 $this->syncOrderItems($order, $items);
 
-                return $order->load('orderItems.product');
+                return $order->refresh()->load('orderItems.product');
             });
 
             return response()->json([

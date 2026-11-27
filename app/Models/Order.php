@@ -10,7 +10,7 @@ class Order extends Model
         'customer_name',
         'customer_phone',
         'notes',
-        'date',
+        'pickup_date',
         'total',
         'status',
     ];

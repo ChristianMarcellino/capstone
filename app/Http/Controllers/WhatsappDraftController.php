@@ -52,7 +52,7 @@ class WhatsappDraftController extends Controller
                 $draft = WhatsappDraft::create($data);
                 $this->syncWhatsappDraftItems($draft, $items);
 
-                return $draft->load('whatsappDraftItems.product');
+                return $draft->refresh()->load('whatsappDraftItems.product');
             });
 
             return response()->json([
